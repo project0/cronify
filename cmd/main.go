@@ -38,6 +38,7 @@ func main() {
 	log.Println("Synchronize with docker host")
 	container, err := cl.ContainerList(context.Background(), types.ContainerListOptions{
 		Filters: containerFilterArgs,
+		All:     true,
 	})
 	if err != nil {
 		panic(err)

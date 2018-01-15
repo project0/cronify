@@ -24,7 +24,7 @@ type JobDockerKill struct {
 }
 
 func (j *JobDockerKill) execute(ctx context.Context, outputWriter io.Writer) (bool, error) {
-	err := j.Client.ContainerStart(ctx, j.Config.Container, types.ContainerStartOptions{})
+	err := j.Client.ContainerKill(ctx, j.Config.Container, j.Config.Signal)
 	if err != nil {
 		return false, err
 	}

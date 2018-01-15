@@ -1,0 +1,31 @@
+version: '2.3'
+services:
+  # fetch cert from global storage
+  cronify_test:
+    image: busybox
+    container_name: updatecert
+    restart: "no"
+    command: |
+      /bin/sh -c \
+      "sleep 90"
+    labels:
+      cronify: "true"
+      # every minute
+      cronify.certupdate.schedule: '10 * * * * * *'
+      cronify.certupdate.type: exec
+      cronify.certupdate.command: >
+        ["/bin/sh", "-c", "echo 'I am running an attached exec' && sleep 20 && echo 'done' && exit 0"]
+      cronify.certupdate.success.nginx_reload.type: kill
+      cronify.certupdate.success.nginx_reload.signal: SIGHUP
+      cronify.certupdate.success.nginx_reload.container: nginx_1
+      cronify.certupdate.fail.nginx_restart.type: restart
+      cronify.certupdate.fail.nginx_restart.container: nginx_2
+
+  nginx_1:
+    image: nginx
+    restart: "always"
+    container_name: nginx_1
+  nginx_2:
+    image: nginx
+    restart: "always"
+    container_name: nginx_2

@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -13,17 +12,13 @@ import (
 )
 
 func main() {
-	//IncomingInterface := flag.String("iface", "eth0", "Incoming network interface on host")
-	//Subnet := flag.String("network", "::/0", "Created chain just cares about this subnet")
-	//DefaultDenyRules := flag.Bool("defaults", false, "Add some default deny rules")
-	//Subnet := flag.String("script_before", "", "Created chain just cares about this subnet")
-	//Subnet := flag.String("script_after", "", "Created chain just cares about this subnet")
 
+	DockerLabelFilter := flag.String("label", "cronify=true", "Discovery only container attached with this label")
 	flag.Parse()
 
 	// enforce older api version
-	os.Setenv("DOCKER_API_VERSION", "1.26")
-	cl, err := client.NewEnvClient()
+	// os.Setenv("DOCKER_API_VERSION", "1.26")
+	cl, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
 	}
@@ -32,8 +27,10 @@ func main() {
 		DockerClient: cl,
 	}
 
-	containerFilterArgs := filters.NewArgs(
-		filters.Arg("label", "cronify=true"))
+	containerFilterArgs := filters.NewArgs()
+	if *DockerLabelFilter != "" {
+		containerFilterArgs.Add("label", *DockerLabelFilter)
+	}
 
 	log.Println("Synchronize with docker host")
 	container, err := cl.ContainerList(context.Background(), types.ContainerListOptions{
@@ -72,8 +69,6 @@ func main() {
 		case event := <-chanEvents:
 			switch event.Action {
 			case "create":
-
-				//fw.AddContainer(event.ID, cl)
 				info, err := cl.ContainerInspect(context.Background(), event.Actor.ID)
 				if err != nil {
 					log.Println("failed to inspect")

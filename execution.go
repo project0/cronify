@@ -82,8 +82,6 @@ type JobDockerExec struct {
 }
 
 func (j *JobDockerExec) execute(ctx context.Context, outputWriter io.Writer) (bool, error) {
-	// decouple context...
-
 	execID, err := j.Client.ContainerExecCreate(ctx, j.Config.Container, types.ExecConfig{
 		AttachStderr: true,
 		AttachStdout: true,
@@ -110,7 +108,6 @@ func (j *JobDockerExec) execute(ctx context.Context, outputWriter io.Writer) (bo
 	}
 
 	// wait for end of execution
-	// todo: timeout
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for {
